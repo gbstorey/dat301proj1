@@ -18,5 +18,19 @@ data <- read.csv("daily_spec.csv")
 ## Investigating Particulate Matter Concentrations Using EPA Hourly Datasets
 ### Analytes of Interest
 ```{r}
- unique(data$Parameter.Name)
+ names = unique(data$Parameter.Name)[12:45]
+metals_and_ions <- filter(data,Parameter.Name %in% names)
+averages <- c()
+for (name in names) {
+  parameter_data <- filter(data, Parameter.Name == name & !is.na(Parameter.Name))
+  head(parameter_data)
+  averages <- append(averages, mean(parameter_data$Arithmetic.Mean))
+}
+averages
+df <- data.frame(Names=names, Average.Value=averages)
 ```
+```{r}
+p<-ggplot(data=df, aes(x=Names, y=Average.Value)) + geom_bar(stat="identity")+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+p
+```
+
