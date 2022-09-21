@@ -12,45 +12,11 @@ library(plotly)
 library(ggplot2)
 library(knitr)
 library(rmarkdown)
-data <- read.csv("hourly_spec.csv")
+data <- read.csv("daily_spec.csv")
 ```
 
 ## Investigating Particulate Matter Concentrations Using EPA Hourly Datasets
-
-```{r include=FALSE}
-head(data)
+### Analytes of Interest
+```{r}
+ unique(data$Parameter.Name)
 ```
-### Description of Variables
-* State Code
-  + FIPS state-level geographic identifier code (integer)
-* Country Code
-  + FIPS country-level geographic identifier code (integer)
-* Site Number
-  + EPA-designated site number to identify monitoring stations (integer)
-* Parameter Code
-  + EPA-designated code corresponding to a unique analyse (integer)
-* POC
-  + Parameter Occurance Code used to identify if there is more than one device measuring the same pollutant at a site (integer)
-* Latitude
-  + Distance north or south of equator, expressed as a (double)
-* Longitude
-  + Distance east or west of the meridian, expressed as a (double)
-* Datum
-  + Reference frame coordinate system (chr)
-* Parameter Name (IMPORTANT)
-  + Name of the analyte (chr)
-* Date Local
-  + Date in the form of "year-month-day" (chr)
-* Time Local
-  + Time at the monitoring site in military format "00:00" (chr)
-* Date GMT
-  + Date in Greenwich Mean Time (chr)
-* Time GMT
-  + Time in Greenwich Mean Time (chr)
-* Sample Measurement (IMPORTANT)
-  + Sample measurement magnitude (double)
-* Units of Measure (IMPORTANT)
-  + The units the sample measurement was made in (chr)
-* MDL
-  + Method detection limit in the units of measure (double)
-* 
