@@ -2,7 +2,7 @@
 title: "Project 1"
 author: "Garrett Storey"
 date: "2022-09-16"
-output: pdf_document
+output: ioslides_presentation
 ---
 
 ```{r setup, include=FALSE}
@@ -16,21 +16,30 @@ data <- read.csv("daily_spec.csv")
 ```
 
 ## Investigating Particulate Matter Concentrations Using EPA Hourly Datasets
-### Analytes of Interest
+
+## Analytes of Interest
 ```{r}
  names = unique(data$Parameter.Name)[12:45]
-metals_and_ions <- filter(data,Parameter.Name %in% names)
+metals_and_ions <- filter(data,Parameter.Name %in% names & City.Name == "Phoenix")
 averages <- c()
 for (name in names) {
   parameter_data <- filter(data, Parameter.Name == name & !is.na(Parameter.Name))
   head(parameter_data)
   averages <- append(averages, mean(parameter_data$Arithmetic.Mean))
+  name <- strsplit(name, " ")[1]
 }
-averages
 df <- data.frame(Names=names, Average.Value=averages)
 ```
+## Plot Code
 ```{r}
+bar_df <- filter(df, df$Average.Value < 0.02 & df$Average.Value > 0)
 p<-ggplot(data=df, aes(x=Names, y=Average.Value)) + geom_bar(stat="identity")+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+p <- plot_ly(x=bar_df$Names, y=bar_df$Average.Value, type='bar') %>% layout(title = "Yearly Average Concentrations of Heavy Metal PM in Phoenix")
+p.update_yaxes(ticksuffix = "  ")
+p.update_yaxes(ticksuffix = "  ")
+```
+## Plot
+```{r echo=FALSE}
 p
 ```
 
