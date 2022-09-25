@@ -12,10 +12,15 @@ library(plotly)
 library(ggplot2)
 library(knitr)
 library(rmarkdown)
+library(RColorBrewer)
 data <- read.csv("daily_spec.csv")
 ```
 
 ## Investigating Particulate Matter Concentrations Using EPA Hourly Datasets
+
+## Background and Problem Definition
+- EPA completes hourly particulate matter characterization and quantification, including heavy metals and harmful compounds.
+- Statistical analysis of these data sets allows us to make inferences about air quality in Phoenix.
 
 ## Analytes of Interest
 ```{r}
@@ -23,23 +28,92 @@ data <- read.csv("daily_spec.csv")
 metals_and_ions <- filter(data,Parameter.Name %in% names & City.Name == "Phoenix")
 averages <- c()
 for (name in names) {
-  parameter_data <- filter(data, Parameter.Name == name & !is.na(Parameter.Name))
-  head(parameter_data)
+  parameter_data <- filter(metals_and_ions, Parameter.Name == name & !is.na(Parameter.Name))
   averages <- append(averages, mean(parameter_data$Arithmetic.Mean))
-  name <- strsplit(name, " ")[1]
 }
 df <- data.frame(Names=names, Average.Value=averages)
 ```
-## Plot Code
+
+## Average Yearly
 ```{r}
-bar_df <- filter(df, df$Average.Value < 0.02 & df$Average.Value > 0)
-p<-ggplot(data=df, aes(x=Names, y=Average.Value)) + geom_bar(stat="identity")+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-p <- plot_ly(x=bar_df$Names, y=bar_df$Average.Value, type='bar') %>% layout(title = "Yearly Average Concentrations of Heavy Metal PM in Phoenix")
-p.update_yaxes(ticksuffix = "  ")
-p.update_yaxes(ticksuffix = "  ")
+bar_df <- filter(df, df$Average.Value < 0.1, df$Average.Value > 0)
+colors <- colorRampPalette(c('red', 'blue'))
+p_average_yearly <- plot_ly(
+  x=bar_df$Names,
+  y=bar_df$Average.Value,
+  type='bar',
+  marker=list(color=colors(nrow(bar_df)))
+  ) %>%
+  layout(title = "Yearly Average Concentrations of Heavy Metal PM in Phoenix",
+         xaxis=list(title="Analytes"),
+         yaxis=list(title="Concentration (ug/ml)")) 
 ```
-## Plot
+
+## Yearly Averages of Heavy Metals
 ```{r echo=FALSE}
-p
+p_average_yearly
+```
+
+## Yearly Averages Commentary
+- Research question: Which metal concentrations were highest on average?
+- The three highest average concentrations of heavy metals over the entire year in Phoenix were Magnesium, Barium, and Copper. 
+- However, the average values are not especially significant. In terms of public health, the highest values are the most important. 
+- Next, we will graph the 95th percentile of each category.
+
+## Calculating 95th percentile using quantile()
+```{r}
+percentile_95 <- c()
+for (name in names) {
+  parameter_data <- filter(metals_and_ions, Parameter.Name == name & !is.na(Parameter.Name))
+  percentile_95 <- append(percentile_95, quantile(parameter_data$Arithmetic.Mean, 0.95))
+}
+df <- data.frame(Names=names, Percentile=percentile_95)
+percentile_95_df <- filter(df, df$Percentile < 0.1 & df$Percentile > 0)
+p_percentile_95 <- plot_ly(x=percentile_95_df$Names,
+                           y=percentile_95_df$Percentile,
+                           type='bar',
+                           marker=list(color=colors(nrow(percentile_95_df)))
+                           ) %>% layout(title = "95th percentile concentrations of Heavy Metal PM in Phoenix",
+                                        xaxis=list(title="Analytes"),
+                                        yaxis=list(title="Concentration (ug/ml)"))
+```
+
+## 95th percentile plot
+```{r}
+p_percentile_95
+```
+## 95th Percentile Commentary
+- Research Question: Which metals are highest in concentration in the 95th percentile?
+- The highest concentrations this time were found for Titanium, Cerium, Barium, and Zinc. 
+- Now these metals will be plotted over the year in order to spot when high values occur.
+
+## Creating df for each analyte
+(Zinc, Barium, Titanium, Cerium, Magnesium)
+```{r}
+top_five_names <- c("Zinc PM2.5 LC",
+                   "Barium PM2.5 LC",
+                   "Titanium PM2.5 LC",
+                   "Cerium PM2.5 LC",
+                   "Magnesium PM2.5 LC",
+                   "Copper PM2.5 LC")
+
+dates <- filter(parameter_data$Date.Local,                              parameter_data$Date.Local != "2021-02-03" &
+parameter_data$Date.Local != "2021-03-17")
+
+p_over_time <- plot_ly(,type='scatter', mode="lines") %>% layout(title = "Analytes of Interest Over Time",
+                                        xaxis=list(title="Analytes"),
+                                        yaxis=list(title="Concentration (ug/ml)"))
+
+for (name in names) {
+  parameter_data <- filter(metals_and_ions, Parameter.Name == name & !is.na(Parameter.Name))
+  daily_averages <- c()
+  daily_averages <- append(daily_averages,
+                             mean(day_df$Arithmetic.Mean))
+  }
+  df = data.frame(Date=unique(parameter_data$Date.Local), Daily.Mean=daily_averages)
+}
+
+p_over_time
+
 ```
 
